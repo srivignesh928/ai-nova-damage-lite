@@ -420,20 +420,20 @@ const autofillVehicleFromVision = async (analysis) => {
             m.toLowerCase().includes(detectedModelLower) || 
             detectedModelLower.includes(m.toLowerCase())
         );
+        
+        // If model not found in database, show error and don't auto-fill
+        if (!matchedModel) {
+            showStatus(`⚠️ Model "${analysis.detected_model}" for brand "${matchedBrand}" is not in our database yet. Price prediction for this model is under development. Available models: ${modelOptions.join(', ')}. Please select manually.`, true);
+            return;
+        }
+    } else {
+        // No model detected, use first available
+        matchedModel = modelOptions[0];
     }
     
-    if (matchedModel) {
-        modelSelect.value = matchedModel;
-        await loadVehicleDetails(matchedBrand, matchedModel);
-    } else if (modelOptions.length > 0) {
-        // If no model match, select first model
-        modelSelect.value = modelOptions[0];
-        await loadVehicleDetails(matchedBrand, modelOptions[0]);
-        
-        if (analysis.detected_model) {
-            showStatus(`ℹ️ Model "${analysis.detected_model}" not found. Selected "${modelOptions[0]}" instead. Please verify before prediction.`);
-        }
-    }
+    // Load vehicle details for matched model
+    modelSelect.value = matchedModel;
+    await loadVehicleDetails(matchedBrand, matchedModel);
 
     // Body type is already set by loadVehicleDetails, but override if detected
     if (analysis.detected_body_type && bodyInput.value !== analysis.detected_body_type) {
@@ -448,6 +448,12 @@ const autofillVehicleFromVision = async (analysis) => {
             if (computedAge > 0 && computedAge < 50) {
                 carAgeInput.value = computedAge;
             }
+        }
+    }
+    
+    // Success message
+    showStatus(`✅ Form auto-filled successfully! Brand: ${matchedBrand}, Model: ${matchedModel}. Please verify and add remaining details.`);
+};
         }
     }
     
