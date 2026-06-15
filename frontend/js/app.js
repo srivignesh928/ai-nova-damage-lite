@@ -1053,12 +1053,14 @@ if (useDamageDescBtn) {
 }
 
 async function analyzeDamageImage() {
+    console.log('=== DAMAGE ANALYSIS STARTED ===');
     const file = damageImageInput.files[0];
     if (!file) {
         alert('Please select a damage image first.');
         return;
     }
 
+    console.log('File selected:', file.name, file.type, file.size);
     analyzeDamageBtn.disabled = true;
     analyzeDamageBtn.textContent = 'Analyzing...';
 
@@ -1066,11 +1068,14 @@ async function analyzeDamageImage() {
         const formData = new FormData();
         formData.append('damage_image', file);
 
+        console.log('Sending request to:', `${API_URL}/damage/analyze`);
         const response = await fetch(`${API_URL}/damage/analyze`, {
             method: 'POST',
             body: formData,
         });
 
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API Error:', errorText);
@@ -1078,7 +1083,7 @@ async function analyzeDamageImage() {
         }
 
         const result = await response.json();
-        console.log('Damage analysis result:', result);
+        console.log('✅ Damage analysis result:', result);
         
         // Store the detected description
         detectedDamageDescription = result.damage_description || 'No description available';
@@ -1110,9 +1115,11 @@ async function analyzeDamageImage() {
 
         analyzeDamageBtn.textContent = 'Analyze Damage';
         analyzeDamageBtn.disabled = false;
+        
+        console.log('=== DAMAGE ANALYSIS COMPLETE ===');
 
     } catch (error) {
-        console.error('Damage analysis error:', error);
+        console.error('❌ Damage analysis error:', error);
         alert(`Damage analysis failed: ${error.message}`);
         analyzeDamageBtn.textContent = 'Analyze Damage';
         analyzeDamageBtn.disabled = false;
