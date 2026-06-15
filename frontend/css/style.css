@@ -428,39 +428,6 @@ input[readonly] {
     font-size: 0.9rem;
 }
 
-.damage-upload-container {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    margin-bottom: 1rem;
-}
-
-.damage-upload-slot {
-    flex: 1;
-}
-
-.damage-upload-slot label {
-    display: block;
-    font-weight: 500;
-    color: #334155;
-    margin-bottom: 0.5rem;
-}
-
-.damage-upload-slot input[type="file"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px dashed #cbd5e1;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.damage-upload-slot input[type="file"]:hover {
-    border-color: #667eea;
-    background: #f8fafc;
-}
-
 .damage-result {
     display: grid;
     grid-template-columns: 200px 1fr;
@@ -531,6 +498,11 @@ input[readonly] {
     color: #991b1b;
 }
 
+.severity-badge.unknown {
+    background: #e2e8f0;
+    color: #64748b;
+}
+
 .damage-desc-box {
     padding: 1rem;
     background: #f8fafc;
@@ -557,28 +529,6 @@ input[readonly] {
     color: #3730a3;
     border-radius: 12px;
     font-size: 0.875rem;
-}
-
-.secondary-button {
-    padding: 0.75rem 1.5rem;
-    background: #64748b;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.secondary-button:hover:not(:disabled) {
-    background: #475569;
-    transform: translateY(-1px);
-}
-
-.secondary-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .vision-section {

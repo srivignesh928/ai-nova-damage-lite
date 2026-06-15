@@ -1072,14 +1072,16 @@ async function analyzeDamageImage() {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Damage analysis failed');
+            const errorText = await response.text();
+            console.error('API Error:', errorText);
+            throw new Error(`API error: ${response.status}`);
         }
 
         const result = await response.json();
+        console.log('Damage analysis result:', result);
         
         // Store the detected description
-        detectedDamageDescription = result.damage_description;
+        detectedDamageDescription = result.damage_description || 'No description available';
 
         // Show preview
         const reader = new FileReader();
@@ -1089,9 +1091,9 @@ async function analyzeDamageImage() {
         reader.readAsDataURL(file);
 
         // Update UI
-        damageDescriptionText.textContent = result.damage_description;
-        damageSeverity.textContent = result.severity;
-        damageSeverity.className = `severity-badge ${result.severity}`;
+        damageDescriptionText.textContent = result.damage_description || 'No description available';
+        damageSeverity.textContent = result.severity || 'unknown';
+        damageSeverity.className = `severity-badge ${result.severity || 'unknown'}`;
 
         // Show detected issues
         damageIssues.innerHTML = '';

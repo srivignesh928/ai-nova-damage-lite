@@ -141,14 +141,14 @@
                                 <h3>🔍 AI Damage Detection</h3>
                                 <p>Upload damage image for automatic description generation</p>
                             </div>
+                            <button id="analyzeDamageBtn" type="button" class="text-button" disabled>Analyze Damage</button>
                         </div>
-                        <div class="damage-upload-container">
-                            <div class="damage-upload-slot">
-                                <label for="damageImage">Upload Damage Photo</label>
+                        <div class="image-grid">
+                            <div class="image-slot">
+                                <label for="damageImage">Damage Photo</label>
                                 <p class="field-note">Upload image showing scratches, dents, broken parts, etc.</p>
                                 <input type="file" id="damageImage" name="damage" accept="image/jpeg,image/png,image/jpg">
                             </div>
-                            <button id="analyzeDamageBtn" type="button" class="secondary-button" disabled>Analyze Damage</button>
                         </div>
                         <div id="damageResult" class="damage-result hidden">
                             <div class="damage-preview">
