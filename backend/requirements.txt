@@ -8,5 +8,5 @@ scikit-learn
 pydantic
 python-multipart
 Pillow
-google-generativeai
 python-dotenv
+boto3

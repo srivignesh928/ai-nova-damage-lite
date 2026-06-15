@@ -46,7 +46,7 @@ from backend.app.utils import (
     count_models,
     count_predictions,
 )
-from backend.app.vision import analyze_images
+from backend.app.bedrock_vision import analyze_vehicle_image_with_bedrock
 
 
 app = FastAPI(
@@ -130,24 +130,41 @@ async def analyze_vehicle_images(
     tyres: UploadFile | None = File(None),
     engine: UploadFile | None = File(None),
 ):
-    images = {
-        "main": main,
-        "rear": rear,
-        "left": left,
-        "right": right,
-        "interior": interior,
-        "dashboard": dashboard,
-        "tyres": tyres,
-        "engine": engine,
-    }
-    valid_images = {slot: upload for slot, upload in images.items() if upload is not None}
     if not main:
         raise HTTPException(status_code=400, detail="Please upload a primary vehicle image for analysis.")
 
     try:
-        return await analyze_images(valid_images)
+        # Read and preprocess image
+        contents = await main.read()
+        from PIL import Image
+        import io
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        image.thumbnail((1024, 1024))
+        
+        # Analyze with AWS Bedrock Nova Lite
+        result = analyze_vehicle_image_with_bedrock(image)
+        
+        return {
+            "detected_brand": result.get("detected_brand"),
+            "detected_model": result.get("detected_model"),
+            "detected_body_type": result.get("detected_body_type"),
+            "detected_color": result.get("detected_color"),
+            "estimated_year": None,
+            "vehicle_category": result.get("detected_body_type"),
+            "images": [
+                {
+                    "slot": "main",
+                    "filename": main.filename,
+                    "content_type": main.content_type,
+                    "width": image.width,
+                    "height": image.height,
+                }
+            ],
+        }
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Image analysis failed: {str(error)}")
 
 @app.get("/vehicles")
 def get_vehicles(search: str | None = None, limit: int = 50):

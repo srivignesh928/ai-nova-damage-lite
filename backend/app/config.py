@@ -25,4 +25,8 @@ ALLOWED_IMAGE_TYPES = {
 MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024
 MAX_IMAGE_DIMENSIONS = (1024, 1024)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# AWS Bedrock Configuration
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
