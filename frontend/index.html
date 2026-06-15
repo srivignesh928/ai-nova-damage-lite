@@ -130,8 +130,41 @@
 
                     <div class="field-row">
                         <div class="form-group wide">
-                            <label>Describe Damage (Developing Phase)</label>
-                            <textarea id="damage_description" rows="4" placeholder="e.g. minor scratches on bumper, dented left door (In Developing Phase)"></textarea>
+                            <label>Describe Damage (Optional)</label>
+                            <textarea id="damage_description" rows="3" placeholder="e.g. minor scratches on bumper, dented left door"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="damage-detection-section">
+                        <div class="damage-header">
+                            <div>
+                                <h3>🔍 AI Damage Detection</h3>
+                                <p>Upload damage image for automatic description generation</p>
+                            </div>
+                        </div>
+                        <div class="damage-upload-container">
+                            <div class="damage-upload-slot">
+                                <label for="damageImage">Upload Damage Photo</label>
+                                <p class="field-note">Upload image showing scratches, dents, broken parts, etc.</p>
+                                <input type="file" id="damageImage" name="damage" accept="image/jpeg,image/png,image/jpg">
+                            </div>
+                            <button id="analyzeDamageBtn" type="button" class="secondary-button" disabled>Analyze Damage</button>
+                        </div>
+                        <div id="damageResult" class="damage-result hidden">
+                            <div class="damage-preview">
+                                <img id="damagePreview" src="" alt="Damage preview">
+                            </div>
+                            <div class="damage-info">
+                                <div class="damage-severity">
+                                    <span class="severity-label">Severity:</span>
+                                    <span id="damageSeverity" class="severity-badge">-</span>
+                                </div>
+                                <div class="damage-desc-box">
+                                    <p id="damageDescriptionText">-</p>
+                                </div>
+                                <div class="damage-issues" id="damageIssues"></div>
+                                <button id="useDamageDescBtn" type="button" class="primary-button">Use Description</button>
+                            </div>
                         </div>
                     </div>
 

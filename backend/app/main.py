@@ -27,6 +27,7 @@ from backend.app.predictor import (
 from backend.app.schemas import (
     AppMetadata,
     ImageAnalysisResponse,
+    DamageAnalysisResponse,
     PredictionHistoryItem,
     PredictionResponse,
     VehicleInput,
@@ -47,6 +48,7 @@ from backend.app.utils import (
     count_predictions,
 )
 from backend.app.bedrock_vision import analyze_vehicle_image_with_bedrock
+from backend.app.damage_detector import detect_vehicle_damage
 
 
 app = FastAPI(
@@ -195,3 +197,44 @@ def health_check():
 @app.get("/vehicle/{brand}/{model}")
 def get_vehicle(brand: str, model: str):
     return get_vehicle_details(db_connection, brand, model)
+
+
+@app.post("/damage/analyze", response_model=DamageAnalysisResponse)
+async def analyze_damage(
+    damage_image: UploadFile = File(...),
+):
+    """
+    Analyze vehicle damage from uploaded image using AWS Bedrock Nova Lite.
+    Returns AI-generated damage description.
+    """
+    if not damage_image:
+        raise HTTPException(status_code=400, detail="Please upload a damage image for analysis.")
+
+    try:
+        # Read and preprocess image
+        contents = await damage_image.read()
+        from PIL import Image
+        import io
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        image.thumbnail((1024, 1024))
+        
+        # Analyze damage with AWS Bedrock Nova Lite
+        result = detect_vehicle_damage(image)
+        
+        return {
+            "has_damage": result.get("has_damage"),
+            "damage_description": result.get("damage_description"),
+            "severity": result.get("severity"),
+            "detected_issues": result.get("detected_issues", []),
+            "confidence": result.get("confidence", 0),
+            "image_info": {
+                "filename": damage_image.filename,
+                "content_type": damage_image.content_type,
+                "width": image.width,
+                "height": image.height,
+            },
+        }
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Damage analysis failed: {str(error)}")

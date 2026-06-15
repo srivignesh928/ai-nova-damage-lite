@@ -37,6 +37,19 @@ const imageInputs = {
     main: document.getElementById('mainImage'),
 };
 
+// Damage detection elements
+const damageImageInput = document.getElementById('damageImage');
+const analyzeDamageBtn = document.getElementById('analyzeDamageBtn');
+const damageResultContainer = document.getElementById('damageResult');
+const damagePreview = document.getElementById('damagePreview');
+const damageSeverity = document.getElementById('damageSeverity');
+const damageDescriptionText = document.getElementById('damageDescriptionText');
+const damageIssues = document.getElementById('damageIssues');
+const useDamageDescBtn = document.getElementById('useDamageDescBtn');
+const damageDescriptionInput = document.getElementById('damage_description');
+
+let detectedDamageDescription = '';
+
 let historyCache = [];
 let brandOptions = [];
 let modelOptions = [];
@@ -1019,5 +1032,90 @@ brandSearchInput.addEventListener('change', async (e) => {
 });
 modelSearchInput.addEventListener('input', renderModelChoices);
 historySearchInput.addEventListener('input', renderHistory);
+
+// Damage detection event listeners
+damageImageInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+        analyzeDamageBtn.disabled = false;
+        damageResultContainer.classList.add('hidden');
+    } else {
+        analyzeDamageBtn.disabled = true;
+    }
+});
+
+analyzeDamageBtn.addEventListener('click', analyzeDamageImage);
+useDamageDescBtn.addEventListener('click', useDamageDescription);
+
+async function analyzeDamageImage() {
+    const file = damageImageInput.files[0];
+    if (!file) {
+        alert('Please select a damage image first.');
+        return;
+    }
+
+    analyzeDamageBtn.disabled = true;
+    analyzeDamageBtn.textContent = 'Analyzing...';
+
+    try {
+        const formData = new FormData();
+        formData.append('damage_image', file);
+
+        const response = await fetch(`${API_URL}/damage/analyze`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Damage analysis failed');
+        }
+
+        const result = await response.json();
+        
+        // Store the detected description
+        detectedDamageDescription = result.damage_description;
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            damagePreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Update UI
+        damageDescriptionText.textContent = result.damage_description;
+        damageSeverity.textContent = result.severity;
+        damageSeverity.className = `severity-badge ${result.severity}`;
+
+        // Show detected issues
+        damageIssues.innerHTML = '';
+        if (result.detected_issues && result.detected_issues.length > 0) {
+            result.detected_issues.forEach(issue => {
+                const span = document.createElement('span');
+                span.textContent = issue;
+                damageIssues.appendChild(span);
+            });
+        }
+
+        // Show result container
+        damageResultContainer.classList.remove('hidden');
+
+        analyzeDamageBtn.textContent = 'Analyze Damage';
+        analyzeDamageBtn.disabled = false;
+
+    } catch (error) {
+        console.error('Damage analysis error:', error);
+        alert(`Damage analysis failed: ${error.message}`);
+        analyzeDamageBtn.textContent = 'Analyze Damage';
+        analyzeDamageBtn.disabled = false;
+    }
+}
+
+function useDamageDescription() {
+    if (detectedDamageDescription) {
+        damageDescriptionInput.value = detectedDamageDescription;
+        alert('✅ Damage description has been added to the form!');
+    }
+}
 
 loadBrands().then(renderHistory);
