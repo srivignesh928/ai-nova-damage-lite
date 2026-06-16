@@ -47,23 +47,23 @@ def detect_vehicle_damage(image: Image.Image) -> dict:
     image_base64 = encode_image_to_base64(image)
     
     # Structured prompt for damage detection
-    prompt = """Analyze this vehicle image for any damage, defects, or issues. 
-Identify specific problems like scratches, dents, broken parts, tire damage, rust, paint issues, etc.
+    prompt = """Analyze this image for vehicle damage. Look for scratches, dents, broken parts, tire damage, rust, paint issues, etc.
 
-Return ONLY valid JSON in this exact format:
+CRITICAL: You MUST respond with ONLY valid JSON. No other text before or after.
+
 {
-  "has_damage": true/false,
-  "damage_description": "One clear sentence describing all visible damage",
-  "severity": "minor/moderate/major/none",
-  "detected_issues": ["issue1", "issue2"],
-  "confidence": 0-100
+  "has_damage": true or false,
+  "damage_description": "One sentence describing damage or 'No visible damage detected'",
+  "severity": "none" or "minor" or "moderate" or "major",
+  "detected_issues": ["issue1", "issue2"] or [],
+  "confidence": 85
 }
 
-Important: 
-- Be specific about location and type of damage
-- If no damage visible, set has_damage to false and damage_description to "No visible damage detected"
-- Keep description concise but informative (max 150 characters)
-- Focus on actual damage, not normal wear"""
+Rules:
+- If this is NOT a vehicle image, return: has_damage=false, severity="none", damage_description="Not a vehicle image"
+- If no damage visible, return: has_damage=false, severity="none", damage_description="No visible damage detected"
+- Keep description under 150 characters
+- confidence should be 0-100"""
 
     # Prepare request payload
     request_body = {
@@ -103,7 +103,18 @@ Important:
         
         # Parse response
         response_body = json.loads(response["body"].read())
-        output_text = response_body.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "{}")
+        
+        # Debug: Print response structure
+        print(f"Bedrock response keys: {response_body.keys()}")
+        
+        # Extract text from response
+        output_text = response_body.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+        
+        if not output_text:
+            print(f"No text in response. Full response: {response_body}")
+            raise ValueError("Empty response from Bedrock")
+        
+        print(f"Raw Bedrock output: {output_text[:200]}")
         
         # Clean JSON from markdown
         output_text = output_text.strip()
@@ -111,6 +122,8 @@ Important:
             output_text = output_text.split("```json")[1].split("```")[0].strip()
         elif "```" in output_text:
             output_text = output_text.split("```")[1].split("```")[0].strip()
+        
+        print(f"Cleaned output: {output_text[:200]}")
         
         result = json.loads(output_text)
         
@@ -122,11 +135,23 @@ Important:
             "confidence": result.get("confidence", 0),
         }
         
-    except Exception as e:
-        print(f"Damage detection error: {e}")
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+        print(f"Failed to parse: {output_text if 'output_text' in locals() else 'N/A'}")
         return {
             "has_damage": False,
-            "damage_description": "Error analyzing damage image",
+            "damage_description": "Unable to analyze damage right now. Please try a clearer image.",
+            "severity": "unknown",
+            "detected_issues": [],
+            "confidence": 0,
+        }
+    except Exception as e:
+        print(f"Damage detection error: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "has_damage": False,
+            "damage_description": f"Error analyzing damage: {str(e)}",
             "severity": "unknown",
             "detected_issues": [],
             "confidence": 0,

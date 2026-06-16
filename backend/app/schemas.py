@@ -29,8 +29,8 @@ class PredictionResponse(BaseModel):
     transaction_type: str
     transaction_price: float
     profit_margin: float | None
-    price_range_min: float
-    price_range_max: float
+    price_range_min: float | None
+    price_range_max: float | None
 
 
 class ImageAnalysisResponse(BaseModel):
@@ -48,7 +48,7 @@ class DamageAnalysisResponse(BaseModel):
     damage_description: str
     severity: str
     detected_issues: list[str]
-    confidence: int
+    confidence: int | float
     image_info: dict
 
 

@@ -222,20 +222,13 @@ def list_history(connection, limit=20):
     return [
         {
             "id": row["id"],
-            "brand": row["brand"],
+            "timestamp": row["created_at"],
+            "oem": row["brand"],
             "model": row["model"],
             "variant": row["variant"],
-            "fuel": row["fuel"],
-            "transmission": row["transmission"],
-            "body": row["body"],
-            "owner_type": row["owner_type"],
-            "City": row["City"],
-            "state": row["state"],
             "km": row["km"],
             "car_age": row["car_age"],
-            "premium_brand": row["premium_brand"],
             "predicted_price": row["predicted_price"],
-            "created_at": row["created_at"],
         }
         for row in rows
     ]
